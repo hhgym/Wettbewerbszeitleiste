@@ -7,6 +7,12 @@ if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
 
+/**
+ * Technische Registry aller Wettbewerbe.
+ *
+ * Die eigentlichen Wettbewerbsdaten liegen in ACF Options. Die Registry hält
+ * ausschließlich stabile IDs sowie den reversiblen Archivstatus.
+ */
 final class Registry {
     const OPTION          = 'wz_competition_registry';
     const ARCHIVED_OPTION = 'wz_competition_archived';
@@ -16,15 +22,30 @@ final class Registry {
         if ( ! is_array( $ids ) ) {
             return array();
         }
+
         return array_values( array_unique( array_filter( array_map( 'sanitize_key', $ids ) ) ) );
     }
 
     public function active() {
-        return array_values( array_filter( $this->all(), function ( $id ) { return ! $this->isArchived( $id ); } ) );
+        return array_values(
+            array_filter(
+                $this->all(),
+                function ( $id ) {
+                    return ! $this->isArchived( $id );
+                }
+            )
+        );
     }
 
     public function archived() {
-        return array_values( array_filter( $this->all(), function ( $id ) { return $this->isArchived( $id ); } ) );
+        return array_values(
+            array_filter(
+                $this->all(),
+                function ( $id ) {
+                    return $this->isArchived( $id );
+                }
+            )
+        );
     }
 
     public function create() {
