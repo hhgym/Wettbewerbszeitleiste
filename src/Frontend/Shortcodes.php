@@ -168,8 +168,19 @@ final class Shortcodes {
     }
 
     private function enqueueAssets() {
-        wp_enqueue_style( 'wz-timeline', WZ_URL . 'assets/css/timeline.css', array(), WZ_VERSION );
-        wp_enqueue_script( 'wz-timeline', WZ_URL . 'assets/js/timeline.js', array(), WZ_VERSION, true );
+        wp_enqueue_style(
+            'wz-timeline',
+            WZ_URL . 'assets/css/timeline.css',
+            array(),
+            WZ_VERSION
+        );
+        wp_enqueue_script(
+            'wz-timeline',
+            WZ_URL . 'assets/js/timeline.js',
+            array(),
+            WZ_VERSION,
+            true
+        );
     }
 
     private function resolveSchoolYear( $raw ) {
@@ -179,7 +190,7 @@ final class Shortcodes {
 
     private function parseSchoolYear( $raw ) {
         $raw = trim( (string) $raw );
-        if ( preg_match( '/^(20\d{2})(?:\/\d{2,4})?$/', $raw, $m ) ) {
+        if ( preg_match( '/^(20\\d{2})(?:\\/\\d{2,4})?$/', $raw, $m ) ) {
             return (int) $m[1];
         }
         return 0;
