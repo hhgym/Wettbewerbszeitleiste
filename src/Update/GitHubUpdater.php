@@ -11,7 +11,7 @@ final class GitHubUpdater {
     private const REPOSITORY_URL = 'https://github.com/hhgym/Wettbewerbszeitleiste';
     private const API_LATEST_RELEASE = 'https://api.github.com/repos/hhgym/Wettbewerbszeitleiste/releases/latest';
     private const CACHE_KEY = 'wz_github_latest_release';
-    private const CACHE_TTL = 21600;
+    private const CACHE_TTL = 21600; // 6 hours.
 
     public function hooks() {
         add_filter( 'update_plugins_github.com', array( $this, 'filterUpdate' ), 10, 4 );
@@ -184,6 +184,8 @@ final class GitHubUpdater {
             return '<p>Keine Release Notes hinterlegt.</p>';
         }
 
+        // Keep the plugin-information dialog safe and dependency-free. GitHub Markdown
+        // is shown as readable plain text while preserving line breaks.
         return wpautop( esc_html( $markdown ) );
     }
 }
