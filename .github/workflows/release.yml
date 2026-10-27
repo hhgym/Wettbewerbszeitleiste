@@ -3,6 +3,8 @@ name: Publish WordPress plugin release
 on:
   push:
     branches: [main]
+    paths-ignore:
+      - 'bootstrap/**'
 
 permissions:
   contents: write
@@ -53,6 +55,7 @@ jobs:
           rsync -a \
             --exclude='.git/' \
             --exclude='.github/' \
+            --exclude='bootstrap/' \
             --exclude='build/' \
             --exclude='tests/' \
             --exclude='.gitignore' \
