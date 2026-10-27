@@ -4,7 +4,7 @@ on:
   push:
     branches: [main]
     paths:
-      - 'bootstrap/source.zip'
+      - 'bootstrap/source.part08'
 
 permissions:
   contents: write
@@ -24,8 +24,9 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          cat bootstrap/source.part* | base64 -d > /tmp/source.zip
           mkdir -p /tmp/source
-          unzip -q bootstrap/source.zip -d /tmp/source
+          unzip -q /tmp/source.zip -d /tmp/source
 
           gh release delete v0.2.4 --cleanup-tag -y || true
 
