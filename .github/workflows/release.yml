@@ -1,0 +1,76 @@
+name: Publish WordPress plugin release
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Read plugin version
+        id: version
+        shell: bash
+        run: |
+          set -euo pipefail
+          VERSION="$(sed -n 's/^ \* Version:[[:space:]]*//p' wettbewerbszeitleiste.php | head -n1 | tr -d '\r')"
+          if [[ ! "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+([+-][0-9A-Za-z.-]+)?$ ]]; then
+            echo "Invalid plugin version: $VERSION" >&2
+            exit 1
+          fi
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "tag=v$VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Stop when this version is already released
+        id: existing
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ steps.version.outputs.tag }}
+        shell: bash
+        run: |
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+            echo "Release $TAG already exists; no new release will be published."
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Build WordPress plugin ZIP
+        if: steps.existing.outputs.exists == 'false'
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p build/wettbewerbszeitleiste
+          rsync -a \
+            --exclude='.git/' \
+            --exclude='.github/' \
+            --exclude='build/' \
+            --exclude='tests/' \
+            --exclude='.gitignore' \
+            ./ build/wettbewerbszeitleiste/
+          cd build
+          zip -qr "wettbewerbszeitleiste-${VERSION}.zip" wettbewerbszeitleiste
+
+      - name: Publish GitHub Release
+        if: steps.existing.outputs.exists == 'false'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ steps.version.outputs.version }}
+          TAG: ${{ steps.version.outputs.tag }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          gh release create "$TAG" \
+            "build/wettbewerbszeitleiste-${VERSION}.zip" \
+            --target "$GITHUB_SHA" \
+            --title "Wettbewerbszeitleiste ${VERSION}" \
+            --generate-notes
