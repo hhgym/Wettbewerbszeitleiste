@@ -173,12 +173,15 @@ final class AcfOptionsCompetitionRepository implements CompetitionRepositoryInte
             return false;
         }
 
+        // Zuerst die ACF-Optionswerte bereinigen, anschließend die technische
+        // Registry entfernen. Verknüpfte Medien und WordPress-Seiten bleiben bestehen.
         if ( ! $this->store->deletePostId( $this->registry->post_id( $id ) ) ) {
             return false;
         }
 
         return $this->registry->remove( $id );
     }
+
 
     public function replaceSubjects( array $subjects ) {
         $rows = array();
@@ -272,6 +275,8 @@ final class AcfOptionsCompetitionRepository implements CompetitionRepositoryInte
         }
         $this->store->update( 'field_wz_school_years', $year_rows, $post_id );
 
+        // Archivstatus ist technische Registry-Metadaten und kein ACF-Feld.
+        // Bei älteren Importdateien ohne dieses Feld bleibt ein vorhandener Status erhalten.
         if ( array_key_exists( 'archived', $competition ) ) {
             if ( $competition['archived'] ) {
                 $this->registry->archive( $id );
@@ -324,10 +329,10 @@ final class AcfOptionsCompetitionRepository implements CompetitionRepositoryInte
 
     private function isoDate( $value ) {
         $value = trim( (string) $value );
-        if ( preg_match( '/^\d{4}-\d{2}-\d{2}$/', $value ) ) {
+        if ( preg_match( '/^\\d{4}-\\d{2}-\\d{2}$/', $value ) ) {
             return $value;
         }
-        if ( preg_match( '/^\d{8}$/', $value ) ) {
+        if ( preg_match( '/^\\d{8}$/', $value ) ) {
             return substr( $value, 0, 4 ) . '-' . substr( $value, 4, 2 ) . '-' . substr( $value, 6, 2 );
         }
         $timestamp = strtotime( $value );
