@@ -32,6 +32,11 @@ final class TimelineService {
             );
         }
 
+        $competition_map = array();
+        foreach ( $competitions as $competition ) {
+            $competition_map[ $competition['id'] ] = $competition;
+        }
+
         $events_by_comp = array();
         foreach ( $events as $event ) {
             $events_by_comp[ $event['competition_id'] ][] = $event;
